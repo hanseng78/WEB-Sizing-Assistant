@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>WEB Sizing | WHS Method + Width & Height Exclusion Rules</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2f7 0%, #d9e0e8 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-card {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255,255,255,0.96);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .header {
+            background: #1e5a8a;
+            background: linear-gradient(98deg, #1a5a8a 0%, #2c6e9e 100%);
+            padding: 1.2rem 1.5rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-weight: 650;
+            font-size: 1.4rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .method-badge {
+            background: #2c9b77;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+        }
+
+        .subhead {
+            font-size: 0.75rem;
+            opacity: 0.85;
+            margin-top: 0.4rem;
+            border-left: 3px solid #60c0a8;
+            padding-left: 0.8rem;
+        }
+
+        .two-col {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .input-panel {
+            flex: 1;
+            min-width: 260px;
+            background: #ffffff;
+            padding: 1.5rem;
+            border-right: none;
+            border-bottom: 1px solid #e4eaf1;
+        }
+
+        .result-panel {
+            flex: 1;
+            background: #fafcff;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #175d73;
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+
+        .measure-hint {
+            font-size: 0.6rem;
+            font-weight: normal;
+            color: #5f7e8c;
+            text-transform: none;
+            margin-left: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            font-size: 1rem;
+            border: 1.5px solid #cbdde6;
+            border-radius: 1rem;
+            background: white;
+            transition: 0.2s;
+            font-weight: 500;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2c9b77;
+            box-shadow: 0 0 0 3px rgba(44,155,119,0.2);
+        }
+
+        .shape-selector {
+            display: flex;
+            gap: 0.8rem;
+            background: #f0f4f9;
+            padding: 0.3rem;
+            border-radius: 3rem;
+        }
+
+        .shape-opt {
+            flex: 1;
+            text-align: center;
+            padding: 0.6rem 0;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #285f6e;
+            font-size: 0.85rem;
+        }
+
+        .shape-opt.active {
+            background: #2c9b77;
+            color: white;
+            box-shadow: 0 2px 8px rgba(44,155,119,0.25);
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e3ecf3;
+        }
+
+        .size-badge {
+            background: #eef2fc;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-family: monospace;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin-bottom: 0.6rem;
+            color: #145c74;
+        }
+
+        .whs-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0e2f3c;
+        }
+
+        .comparison-tag {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .undersized { background: #ffeed9; color: #c26b1a; border-left: 3px solid #e68a2e; }
+        .oversized { background: #fee9e6; color: #bc3f2c; border-left: 3px solid #dc5f43; }
+        .equal-fit { background: #e0f5ef; color: #176f54; border-left: 3px solid #2c9b77; }
+
+        .sizing-rule {
+            background: #eef4fa;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            margin: 0.8rem 0 0.4rem 0;
+            border-left: 4px solid #3b9f8c;
+        }
+
+        .warning-box-danger {
+            background: #fee9e6;
+            border-left: 4px solid #e74c3c;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: #c0392b;
+        }
+
+        .warning-box-danger strong {
+            color: #c0392b;
+        }
+
+        .multiple-devices {
+            background: #f0f6fc;
+            padding: 0.6rem;
+            border-radius: 1rem;
+            margin-top: 0.8rem;
+            font-size: 0.75rem;
+        }
+
+        .device-badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .device-option-chip {
+            background: #e4edf5;
+            padding: 0.25rem 0.8rem;
+            border-radius: 2rem;
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #145c74;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .device-option-chip:active {
+            transform: scale(0.98);
+        }
+
+        .device-option-chip.active-chip {
+            background: #2c9b77;
+            color: white;
+        }
+
+        .device-table-container {
+            overflow-x: auto;
+            margin-top: 0.8rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            min-width: 280px;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        th {
+            background: #e4f0f5;
+            padding: 8px 4px;
+            color: #134e64;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #e9eef3;
+        }
+
+        .highlight-row {
+            background: #cbe9e0;
+            font-weight: 700;
+        }
+
+        .footer-disclaimer {
+            background: #fef9e6;
+            border-top: 2px solid #e6a017;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.65rem;
+            color: #7a6a3a;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .footer-disclaimer strong {
+            color: #b8860b;
+        }
+
+        .brain-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            font-size: 1.5rem;
+        }
+
+        .measurement-guide {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            text-align: left;
+            border: 1px solid #e2edf2;
+        }
+
+        .measurement-guide p {
+            font-size: 0.7rem;
+            color: #4a6a7a;
+            margin-top: 0.4rem;
+        }
+
+        .measurement-guide img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+
+        /* Tablet and desktop styles */
+        @media (min-width: 768px) {
+            body {
+                padding: 1.8rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .input-panel {
+                border-right: 1px solid #e4eaf1;
+                border-bottom: none;
+                padding: 2rem;
+            }
+            
+            .result-panel {
+                padding: 2rem;
+            }
+            
+            .whs-value {
+                font-size: 2rem;
+            }
+            
+            .device-option-chip {
+                padding: 0.3rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Large desktop */
+        @media (min-width: 1200px) {
+            .header h1 {
+                font-size: 1.9rem;
+            }
+            
+            .whs-value {
+                font-size: 1rem;
+            }
+        }
+
+        /* Touch-friendly button sizes */
+        .device-option-chip {
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .shape-opt {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="main-card">
+    <div class="header">
+        <h1>
+            <span class="brain-icon">🧠</span> WEB Device Sizing 
+            <span class="method-badge">Width-height Sum (WHS)</span>
+        </h1>
+        <div class="subhead"></div>
+    </div>
+
+    <div class="two-col">
+        <!-- INPUT SECTION -->
+        <div class="input-panel">
+            <div class="input-group">
+                <label>📐 Aneurysm width #1  <span class="measure-hint">mm</span></label>
+                <input type="number" id="d1" step="0.1" value="7.0" placeholder="e.g., 7.0 mm">
+            </div>
+            <div class="input-group">
+                <label>📏 Aneurysm width #2  <span class="measure-hint">mm</span></label>
+                <input type="number" id="d2" step="0.1" value="6.5" placeholder="e.g., 6.5 mm">
+            </div>
+            <div class="input-group">
+                <label>⬆️ Aneurysm height (H) <span class="measure-hint">mm (dome height)</span></label>
+                <input type="number" id="height" step="0.1" value="5.0" placeholder="height in mm">
+            </div>
+
+            <div class="input-group">
+                <label>🌀 Aneurysm shape </label>
+                <div class="shape-selector" id="shapeToggle">
+                    <div class="shape-opt" data-shape="cyl">Cylindrical</div>
+                    <div class="shape-opt" data-shape="noncyl">Non‑cylindrical</div>
+                </div>
+                <input type="hidden" id="shapeType" value="cyl">
+            </div>
+
+            <!-- Measurement Guide -->
+            <div class="measurement-guide">
+                <p>Measure widths on <b>bifurcation</b> and <b>down-the-barrel</b> views.</p>
+                <p>Measure height on <b>down-the-barrel</b> view. <br></p>
+                <p><br></p>
+                <p style="text-align: center;"><img src="https://raw.githubusercontent.com/hanseng78/WEB-Sizing-Assistant/refs/heads/main/Picture1.png" alt="Projections" style="max-width: 100%; height: auto; border-radius: 8px;"></p>
+                <p><br></p>
+                <p><b>NON-CYLINDRICAL</b> aneurysm - measure the <b>widest</b> and <b>tallest</b> dimensions.</p>
+                <p style="text-align: center;"><img src="https://raw.githubusercontent.com/hanseng78/WEB-Sizing-Assistant/refs/heads/main/Picture3.png" alt="Morphology" style="max-width: 100%; height: auto; border-radius: 8px;"></p>
+            </div>
+        </div>
+
+        <div class="result-panel">
+            <div class="device-card">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                    <span class="size-badge" id="whsLabel">📊 Aneurysm WHS</span>
+               	    <div class="whs-value" id="whsDisplay">—</div>
+                    <span id="selectedStatusBadge" class="comparison-tag"></span>
+                </div>
+
+                <div id="roundingInfo" style="font-size: 0.7rem; color: #3a7b66; margin-top: -0.2rem; margin-bottom: 0.5rem;"></div>
+		<div><br></div>
+                <!-- Multiple device options -->
+                <div id="multipleDevicesContainer" class="multiple-devices" style="display: none;">
+                    <div style="font-weight: 600; margin-bottom: 0.3rem;">📌 Available devices with optimal WHS:</div>
+                    <div id="deviceOptionsList" class="device-badge-list"></div>
+                </div>
+                
+                <!-- Danger warning for safety rule violations -->
+                <div id="safetyWarning" class="warning-box-danger" style="display: none;">
+                    ⚠️ <strong>No suitable device size available</strong><br>
+                    <span id="safetyWarningReason"></span>
+                </div>
+                
+                <!-- Currently selected device -->
+                <div style="font-size: 1.6rem; font-weight: 900; margin: 0.6rem 0 0.2rem;" id="bestDeviceLine">WEB ? × ? mm</div>
+                
+                <div id="matchDesc" class="sizing-rule">Enter measurements to calculate WHS and find best device(s).</div>
+                <div id="sizingDetails" style="font-size: 0.7rem; margin-top: 0.5rem; color: #2c6275;"></div>
+            </div>
+    <div class="footer-disclaimer">
+        🧠 WEB Sizing Assistant — Beta v1.0 (May 2026) | Developed by <strong>Dr Han Seng Chew</strong>, Birmingham, U.K.   <br><br>       
+        ⚠️ This tool provides recommendations for training and simulation purposes only. It is <strong>NOT INTENDED FOR CLINICAL USE OR REAL PATIENT MANAGEMENT</strong>.<br> <br> 
+	All clinical decisions must be made by qualified healthcare professionals using approved medical devices and appropriate clinical judgment. The developer assumes no liability for any actions taken based on this tool.
+    </div>        
+	</div>
+    </div>
+   
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // OFFICIAL WEB DEVICE INVENTORY (all WEB SL)
+    const rawDeviceEntries = [
+        {w:3, h:2}, {w:3.5, h:2}, {w:4, h:2}, {w:4.5, h:2}, {w:5, h:2}, {w:6, h:2}, {w:7, h:2},
+        {w:4, h:3}, {w:5, h:3}, {w:6, h:3}, {w:7, h:3}, {w:8, h:3},
+        {w:6, h:4}, {w:7, h:4}, {w:8, h:4}, {w:9, h:4}, {w:10, h:4},
+        {w:7, h:5}, {w:8, h:5}, {w:9, h:5}, {w:10, h:5},
+        {w:9, h:6}, {w:10, h:6}, {w:11, h:6},
+        {w:9, h:7}, {w:10, h:7}, {w:11, h:7},
+        {w:10, h:8}, {w:11, h:8},
+        {w:11, h:9}
+    ];
+    
+    // Build full device list with WHS
+    const webDevices = rawDeviceEntries.map(dev => ({
+        width: dev.w,
+        height: dev.h,
+        whs: dev.w + dev.h
+    }));
+    
+    webDevices.sort((a,b) => a.whs - b.whs);
+    
+    // Maximum allowed WHS for aneurysm
+    const MAX_ALLOWED_WHS = 21;
+    
+    function applyRoundingRule(value) {
+        return Math.round(value);
+    }
+    
+    function shouldExcludeDevice(device, avgWidth, aneurysmHeight) {
+        const widthMatch = Math.abs(device.width - avgWidth) < 0.1;
+        const heightMatch = Math.abs(device.height - aneurysmHeight) < 0.1;
+        return widthMatch || heightMatch;
+    }
+    
+    function findAllBestDevicesByWHS(targetWHS, minWidth, maxHeight, avgWidth, aneurysmHeight) {
+        let minDiff = Infinity;
+        let bestMatches = [];
+        
+        for (let dev of webDevices) {
+            if (dev.width < minWidth - 0.05) continue;
+            if (dev.height > maxHeight + 0.05) continue;
+            if (shouldExcludeDevice(dev, avgWidth, aneurysmHeight)) continue;
+            
+            let diff = Math.abs(dev.whs - targetWHS);
+            if (diff < minDiff) {
+                minDiff = diff;
+                bestMatches = [dev];
+            } else if (Math.abs(diff - minDiff) < 0.001) {
+                bestMatches.push(dev);
+            }
+        }
+        return { bestDevices: bestMatches, minDifference: minDiff };
+    }
+    
+    function hasAnySafeDeviceExcludingMatches(minWidth, maxHeight, avgWidth, aneurysmHeight) {
+        for (let dev of webDevices) {
+            if (dev.width >= minWidth - 0.05 && dev.height <= maxHeight + 0.05) {
+                if (!shouldExcludeDevice(dev, avgWidth, aneurysmHeight)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    function getComparisonStatus(deviceWHS, rawAneurysmWHS) {
+        if (Math.abs(deviceWHS - rawAneurysmWHS) < 0.05) return { text: "EQUAL FIT", class: "equal-fit" };
+        if (deviceWHS < rawAneurysmWHS) return { text: "SLIGHTLY UNDERSIZED", class: "undersized" };
+        return { text: "SLIGHTLY OVERSIZED", class: "oversized" };
+    }
+    
+    function getAdjustedHeight(originalHeight, shape) {
+        if (shape === 'noncyl') return Math.max(1.5, originalHeight - 1.0);
+        return originalHeight;
+    }
+    
+    function computeAneurysmParams(d1, d2, height, shape) {
+        if (isNaN(d1) || isNaN(d2) || isNaN(height) || d1 <= 0 || d2 <= 0 || height <= 0) return null;
+        const avgWidth = (d1 + d2) / 2.0;
+        const adjustedH = getAdjustedHeight(height, shape);
+        const rawWHS = avgWidth + adjustedH;
+        return { avgWidth, adjustedHeight: adjustedH, rawWHS, originalHeight: height, shape };
+    }
+    
+    // Helper function to clear selection explanation section
+    function clearSelectionExplanation() {
+        document.getElementById('selectedStatusBadge').innerHTML = '';
+        document.getElementById('bestDeviceLine').innerHTML = 'N/A';
+        document.getElementById('matchDesc').innerHTML = 'Enter valid measurements to calculate WHS and find best device(s).';
+        document.getElementById('sizingDetails').innerHTML = '';
+        document.getElementById('multipleDevicesContainer').style.display = 'none';
+        document.getElementById('deviceOptionsList').innerHTML = '';
+    }
+    
+    function renderDeviceTable(selectedDevice, targetWHS, minWidth, maxHeight, avgWidth, aneurysmHeight) {
+        const tbody = document.getElementById('deviceTableBody');
+        if (!tbody) return;
+        let html = '';
+        webDevices.forEach(dev => {
+            const isSafe = (dev.width >= minWidth - 0.05) && (dev.height <= maxHeight + 0.05);
+            const isExcluded = shouldExcludeDevice(dev, avgWidth, aneurysmHeight);
+            const isHighlighted = selectedDevice && Math.abs(dev.width - selectedDevice.width) < 0.01 && Math.abs(dev.height - selectedDevice.height) < 0.01;
+            let extraNote = '';
+            if (targetWHS && !isHighlighted && Math.abs(dev.whs - targetWHS) < 0.8 && Math.abs(dev.whs - targetWHS) > 0.01) {
+                extraNote = ' ▲ close';
+            }
+            let cellContent = `${dev.width} × ${dev.height}`;
+            if (!isSafe) cellContent += ' ✗';
+            if (isExcluded && isSafe) {
+                const widthMatch = Math.abs(dev.width - avgWidth) < 0.1;
+                const heightMatch = Math.abs(dev.height - aneurysmHeight) < 0.1;
+                if (widthMatch && heightMatch) cellContent += ' ⚠️(excluded)';
+                else if (widthMatch) cellContent += ' ⚠️(excluded)';
+                else if (heightMatch) cellContent += ' ⚠️(excluded)';
+            }
+            
+            let rowStyle = '';
+            if (isHighlighted) rowStyle = 'background:#bfe2d6; font-weight:bold;';
+            else if (!isSafe) rowStyle = 'opacity:0.4; background:#f5f5f5;';
+            else if (isExcluded) rowStyle = 'opacity:0.5; background:#ffe0e0; text-decoration: line-through;';
+            
+            html += `<tr style="${rowStyle}">
+                        <td>${cellContent}</td>
+                        <td><strong>${dev.whs.toFixed(1)}</strong>${extraNote}</td>
+                       </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+    
+    let currentBestDevices = [];
+    let currentTargetWHS = null;
+    let currentSelectedDevice = null;
+    let currentAvgWidth = null;
+    let currentAdjustedHeight = null;
+    let currentRawWHS = null;
+    
+    function selectDevice(device) {
+        if (!device) return;
+        currentSelectedDevice = device;
+        
+        const comparison = getComparisonStatus(device.whs, currentRawWHS);
+        document.getElementById('selectedStatusBadge').innerHTML = comparison.text;
+        document.getElementById('selectedStatusBadge').className = `comparison-tag ${comparison.class}`;
+        document.getElementById('bestDeviceLine').innerHTML = `🏆 WEB ${device.width} × ${device.height} mm`;
+        
+        let matchDescText = `✅ <strong>WEB ${device.width}×${device.height} mm</strong> selected. <br> `;
+        matchDescText += `WEB width (${device.width}mm) ≥ avg. aneurysm diameter (${currentAvgWidth.toFixed(1)}mm) ✓<br> `;
+        matchDescText += `WEB height (${device.height}mm) ≤ aneurysm height (${currentAdjustedHeight.toFixed(1)}mm) ✓<br> `;
+        matchDescText += `Device WHS (${device.whs.toFixed(1)}) compared to RAW aneurysm WHS (${currentRawWHS.toFixed(2)}) - ${comparison.text}.`;
+        document.getElementById('matchDesc').innerHTML = matchDescText;
+        
+        renderDeviceTable(device, currentTargetWHS, currentAvgWidth, currentAdjustedHeight, currentAvgWidth, currentAdjustedHeight);
+        
+        document.querySelectorAll('.device-option-chip').forEach(chip => {
+            const chipValue = chip.getAttribute('data-device');
+            if (chipValue === `${device.width}|${device.height}`) {
+                chip.classList.add('active-chip');
+            } else {
+                chip.classList.remove('active-chip');
+            }
+        });
+    }
+    
+    function updateSizing() {
+        let d1 = parseFloat(document.getElementById('d1').value);
+        let d2 = parseFloat(document.getElementById('d2').value);
+        let height = parseFloat(document.getElementById('height').value);
+        let shape = document.getElementById('shapeType').value;
+        
+        if (isNaN(d1) || isNaN(d2) || isNaN(height) || d1 <= 0 || d2 <= 0 || height <= 0) {
+            document.getElementById('whsDisplay').innerHTML = '⚠️ invalid';
+            document.getElementById('bestDeviceLine').innerHTML = '—';
+            document.getElementById('matchDesc').innerHTML = 'Please ensure all measurements > 0 mm.';
+            document.getElementById('selectedStatusBadge').innerHTML = '';
+            document.getElementById('sizingDetails').innerHTML = '';
+            document.getElementById('roundingInfo').innerHTML = '';
+            document.getElementById('multipleDevicesContainer').style.display = 'none';
+            document.getElementById('safetyWarning').style.display = 'none';
+            renderDeviceTable(null, null, 0, 0, 0, 0);
+            document.getElementById('whsLabel').innerHTML = '📊 Aneurysm WHS';
+            return;
+        }
+        
+        const params = computeAneurysmParams(d1, d2, height, shape);
+        if (!params) return;
+        
+        const { avgWidth, adjustedHeight, rawWHS, originalHeight } = params;
+        
+        // NEW RULE: Exclude aneurysms with WHS > 21
+        if (rawWHS > MAX_ALLOWED_WHS) {
+            const warningBox = document.getElementById('safetyWarning');
+            const warningReason = document.getElementById('safetyWarningReason');
+            warningBox.style.display = 'block';
+            warningReason.innerHTML = `Aneurysm WHS (${rawWHS.toFixed(2)} mm) exceeds the maximum supported size of ${MAX_ALLOWED_WHS} mm. WEB devices are not suitable for aneurysms of this size. Consider alternative treatment options.`;
+            document.getElementById('multipleDevicesContainer').style.display = 'none';
+            document.getElementById('bestDeviceLine').innerHTML = '❌ Aneurysm too large';
+            document.getElementById('selectedStatusBadge').innerHTML = '';
+            document.getElementById('whsDisplay').innerHTML = '' //`${rawWHS.toFixed(2)} mm`;
+            document.getElementById('roundingInfo').innerHTML = `⚠️ WHS > ${MAX_ALLOWED_WHS} mm - Not suitable for WEB device`;
+            document.getElementById('whsLabel').innerHTML = `📊 Aneurysm WHS (exceeds limit)`;
+            document.getElementById('matchDesc').innerHTML = `⚠️ <strong>Aneurysm too large for WEB device.</strong> The calculated WHS (${rawWHS.toFixed(2)} mm) exceeds the maximum supported size of ${MAX_ALLOWED_WHS} mm. No WEB device can safely accommodate this aneurysm.`;
+            document.getElementById('sizingDetails').innerHTML = `Average width = (${d1.toFixed(1)}+${d2.toFixed(1)})/2 = ${avgWidth.toFixed(1)} mm | Adjusted height = ${adjustedHeight.toFixed(1)} mm.<br>Raw WHS = ${avgWidth.toFixed(1)} + ${adjustedHeight.toFixed(1)} = ${rawWHS.toFixed(2)} mm > ${MAX_ALLOWED_WHS} mm threshold.`;
+            renderDeviceTable(null, null, 0, 0, 0, 0);
+            // Clear selection explanation when no suitable device
+            clearSelectionExplanation();
+            return;
+        }
+        
+        const roundedWHS = applyRoundingRule(rawWHS);
+        currentTargetWHS = roundedWHS;
+        currentAvgWidth = avgWidth;
+        currentAdjustedHeight = adjustedHeight;
+        currentRawWHS = rawWHS;
+        
+        const anySafeDeviceExists = hasAnySafeDeviceExcludingMatches(avgWidth, adjustedHeight, avgWidth, adjustedHeight);
+        
+        if (!anySafeDeviceExists) {
+            const warningBox = document.getElementById('safetyWarning');
+            const warningReason = document.getElementById('safetyWarningReason');
+            warningBox.style.display = 'block';
+            warningReason.innerHTML = `No suitable WEB device available. All devices that satisfy width ≥ ${avgWidth.toFixed(1)}mm and height ≤ ${adjustedHeight.toFixed(1)}mm are excluded (matching aneurysm width or height).`;
+            document.getElementById('multipleDevicesContainer').style.display = 'none';
+            document.getElementById('bestDeviceLine').innerHTML = '❌ No suitable device';
+            document.getElementById('selectedStatusBadge').innerHTML = '';
+            document.getElementById('whsDisplay').innerHTML = '' //`${roundedWHS} mm`;
+            document.getElementById('roundingInfo').innerHTML = `📐 Raw WHS: ${avgWidth.toFixed(1)} + ${adjustedHeight.toFixed(1)} = ${rawWHS.toFixed(2)} mm → rounded to ${roundedWHS}`;
+            document.getElementById('whsLabel').innerHTML = `📊 Aneurysm WHS`;
+            renderDeviceTable(null, roundedWHS, avgWidth, adjustedHeight, avgWidth, adjustedHeight);
+            // Clear selection explanation when no suitable device
+            clearSelectionExplanation();
+            return;
+        }
+        
+        const { bestDevices, minDifference } = findAllBestDevicesByWHS(roundedWHS, avgWidth, adjustedHeight, avgWidth, adjustedHeight);
+        
+        if (bestDevices.length === 0) {
+            const warningBox = document.getElementById('safetyWarning');
+            const warningReason = document.getElementById('safetyWarningReason');
+            warningBox.style.display = 'block';
+            warningReason.innerHTML = `No device with acceptable WHS meets the safety criteria (excluding width/height matches).`;
+            document.getElementById('multipleDevicesContainer').style.display = 'none';
+            document.getElementById('bestDeviceLine').innerHTML = '❌ No suitable WHS match';
+            document.getElementById('selectedStatusBadge').innerHTML = '';
+            document.getElementById('whsDisplay').innerHTML = '' //`${roundedWHS} mm`;
+            document.getElementById('roundingInfo').innerHTML = `📐 Raw WHS: ${avgWidth.toFixed(1)} + ${adjustedHeight.toFixed(1)} = ${rawWHS.toFixed(2)} mm → rounded to ${roundedWHS}`;
+            document.getElementById('whsLabel').innerHTML = `📊 Aneurysm WHS`;
+            renderDeviceTable(null, roundedWHS, avgWidth, adjustedHeight, avgWidth, adjustedHeight);
+            // Clear selection explanation when no suitable device
+            clearSelectionExplanation();
+            return;
+        }
+        
+        document.getElementById('safetyWarning').style.display = 'none';
+        currentBestDevices = bestDevices;
+        
+        const multipleContainer = document.getElementById('multipleDevicesContainer');
+        const optionsListDiv = document.getElementById('deviceOptionsList');
+        
+        if (bestDevices.length > 1) {
+            multipleContainer.style.display = 'block';
+            let chipsHtml = '';
+            bestDevices.forEach(dev => {
+                chipsHtml += `<div class="device-option-chip" data-device="${dev.width}|${dev.height}" data-width="${dev.width}" data-height="${dev.height}">WEB ${dev.width}×${dev.height} mm</div>`;
+            });
+            optionsListDiv.innerHTML = chipsHtml;
+            
+            document.querySelectorAll('.device-option-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    const width = parseFloat(chip.getAttribute('data-width'));
+                    const heightVal = parseFloat(chip.getAttribute('data-height'));
+                    const selected = webDevices.find(d => Math.abs(d.width - width) < 0.01 && Math.abs(d.height - heightVal) < 0.01);
+                    if (selected) selectDevice(selected);
+                });
+            });
+        } else {
+            multipleContainer.style.display = 'none';
+        }
+        
+        let defaultDevice = bestDevices.reduce((prev, curr) => (curr.width > prev.width ? curr : prev), bestDevices[0]);
+        selectDevice(defaultDevice);
+        
+        document.getElementById('whsDisplay').innerHTML = '' //`${roundedWHS} mm`;
+        document.getElementById('roundingInfo').innerHTML = `📐 Raw WHS: ${avgWidth.toFixed(1)} + ${adjustedHeight.toFixed(1)} = ${rawWHS.toFixed(2)} mm → rounded to ${roundedWHS}`;
+        document.getElementById('whsLabel').innerHTML = `📊 Aneurysm WHS`;
+    }
+    
+    function initShapeToggle() {
+        const shapeOptions = document.querySelectorAll('.shape-opt');
+        const shapeHidden = document.getElementById('shapeType');
+        shapeOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                const val = opt.getAttribute('data-shape');
+                shapeHidden.value = val === 'cyl' ? 'cyl' : 'noncyl';
+                shapeOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                updateSizing();
+            });
+        });
+        document.querySelector('.shape-opt[data-shape="cyl"]')?.classList.add('active');
+    }
+    
+    function bindInputEvents() {
+        ['d1', 'd2', 'height'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', () => updateSizing());
+        });
+    }
+    
+    initShapeToggle();
+    bindInputEvents();
+    updateSizing();
+</script>
+</body>
+</html>
